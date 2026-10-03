@@ -38,7 +38,7 @@ std::vector<std::string> tokenize(const std::string& cmd){
 }
 
 
-ParsedCommand parse_redirection(const std::vector<std::string> tokens){
+ParsedCommand parse_redirection(const std::vector<std::string> &tokens){
     ParsedCommand result;
     for (size_t i = 0;i < tokens.size();i++){
         if (tokens[i] == "<"){
@@ -143,25 +143,24 @@ int main(){
             }
 
 
-        std::string output_file, input_file;
-        ParsedCommand res = parse_redirection(tokens);
-        output_file = res.output_file;
-        input_file = res.input_file;
-        command_tokens = res.command_tokens;
-        
-        if (command_tokens.empty()) {
-            std::cerr << "Invalid command\n";
-            continue;
-        }
-        
-        for (auto& token: command_tokens){
-            arguments.push_back(token.data());
-        }
-        arguments.push_back(nullptr);
-
         if (pipe_index == tokens.size())
         {
+
+            std::string output_file, input_file;
+            ParsedCommand res = parse_redirection(tokens);
+            output_file = res.output_file;
+            input_file = res.input_file;
+            command_tokens = res.command_tokens;
             
+            if (command_tokens.empty()) {
+                std::cerr << "Invalid command\n";
+                continue;
+            }
+            
+            for (auto& token: command_tokens){
+                arguments.push_back(token.data());
+            }
+            arguments.push_back(nullptr);
             
             pid_t pid = fork();
             if (pid < 0){
