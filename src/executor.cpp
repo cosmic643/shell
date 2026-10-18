@@ -7,7 +7,7 @@
 #include <vector>
 #include <array>
 
-int execute_pipeline(std::vector<ParsedCommand>& commands){
+int execute_pipeline(std::vector<ParsedCommand>& commands, bool background){
     std::vector<std::array<int, 2>> pipes(commands.size() - 1);
     
     for (auto& p : pipes) {
@@ -79,8 +79,10 @@ int execute_pipeline(std::vector<ParsedCommand>& commands){
     
     
     // Wait for every command in the pipeline
-    for (pid_t pid : pids) {
-        waitpid(pid, nullptr, 0);
+    if (!background){
+        for (pid_t pid : pids) {
+            waitpid(pid, nullptr, 0);
+        }
     }
     return 0;
 }

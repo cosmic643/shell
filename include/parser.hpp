@@ -7,6 +7,7 @@
 
 struct ParseResult {
     std::vector<ParsedCommand> commands;
+    book background;
     bool valid;
 };
 

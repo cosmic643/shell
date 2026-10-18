@@ -5,7 +5,7 @@
 
 
 bool is_operator(const std::string& token){
-    if (token == "|" || token == "<" || token == ">") return true;
+    if (token == "|" || token == "<" || token == ">" || token == "&") return true;
     return false;
 }
 
@@ -21,7 +21,7 @@ std::vector<std::string> tokenize(const std::string& cmd) {
                 temp.clear();
             }
         }
-        else if (c == '<' || c == '>' || c == '|'){
+        else if (c == '<' || c == '>' || c == '|' || c == '&'){
             if (!temp.empty()) {
                 tokens.push_back(temp);
                 temp.clear();
@@ -44,12 +44,13 @@ std::vector<std::string> tokenize(const std::string& cmd) {
 ParseResult parse_tokens(const std::vector<std::string> &tokens){
     std::vector<ParsedCommand> result;
     ParsedCommand parsed_cmd;
-    
+    bool background = false;
     size_t n = tokens.size();
+    
     for (size_t i = 0;i < n;i++){
         if (tokens[i] == "|") {
             if (parsed_cmd.command_tokens.empty()) {
-                return ParseResult{{}, false};
+                return ParseResult{{}, false, false};
             }
             result.push_back(parsed_cmd);
             parsed_cmd.clear();
@@ -58,16 +59,22 @@ ParseResult parse_tokens(const std::vector<std::string> &tokens){
         else if (tokens[i] == "<") {
             
             if (i + 1 >= n || is_operator(tokens[i + 1])){
-                return ParseResult{{}, false};
+                return ParseResult{{}, , false};
             }
-            parsed_cmd.redirection.push_back({RedirectionType::Input, tokens[++i]});
+            parsed_cmd.redirections.push_back({RedirectionType::Input, tokens[++i]});
         }
 
         else if (tokens[i] == ">") {
             if (i + 1 >= n || is_operator(tokens[i + 1])) {
-                return ParseResult{{}, false};
+                return ParseResult{{},false, false};
             }
-            parsed_cmd.redirection.push_back({RedirectionType::Output, tokens[++i]});
+            parsed_cmd.redirections.push_back({RedirectionType::Output, tokens[++i]});
+        }
+        else if (tokens[i] == "&") {
+            if (i != n-1){
+                return ParseResult{{}, false, false}
+            }
+            background = true;
         }
         else {
             parsed_cmd.command_tokens.push_back(tokens[i]);
@@ -75,12 +82,12 @@ ParseResult parse_tokens(const std::vector<std::string> &tokens){
     }
     
     if (parsed_cmd.command_tokens.empty()) {
-        return ParseResult{{}, false};
+        return ParseResult{{}, background, false};
     }
     
     result.push_back(parsed_cmd);
     
-    return ParseResult{result, true};
+    return ParseResult{result, background, true};
 }
 
 
